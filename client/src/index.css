@@ -1,0 +1,25 @@
+:root {
+  --bg: #f6f7f9;
+  --card: #ffffff;
+  --text: #1f2328;
+  --muted: #656d76;
+  --brand: #1f6feb;
+  --available: #2da44e;
+  --occupied: #cf222e;
+  --unavailable: #8c959f;
+  font-family: system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+  color: var(--text);
+  background: var(--bg);
+}
+* { box-sizing: border-box; }
+body { margin: 0; }
+.nav { display: flex; gap: 16px; align-items: center; padding: 12px 24px; background: var(--card); border-bottom: 1px solid #d0d7de; flex-wrap: wrap; }
+.nav a { color: var(--muted); text-decoration: none; }
+.nav a.active { color: var(--brand); font-weight: 600; }
+.brand { color: var(--brand); }
+.spacer { flex: 1; }
+.container { max-width: 960px; margin: 24px auto; padding: 0 16px; }
+.todo { color: var(--muted); font-style: italic; }
+button { padding: 8px 14px; border: 1px solid #d0d7de; border-radius: 6px; background: var(--card); cursor: pointer; }
+input, select { padding: 8px; border: 1px solid #d0d7de; border-radius: 6px; }
+.error { color: var(--occupied); }
