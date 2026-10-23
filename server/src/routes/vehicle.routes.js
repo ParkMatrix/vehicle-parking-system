@@ -7,10 +7,11 @@
 const { Router } = require('express');
 const auth = require('../middleware/auth');
 const requireRole = require('../middleware/rbac');
+const vehicleController = require('../controllers/vehicle.controller');
 const router = Router();
 
-// router.get('/', auth, vehicleController.list);
-// router.post('/', auth, requireRole('owner'), vehicleController.create);
-// router.patch('/:id', auth, vehicleController.update);
+router.get('/', auth, vehicleController.list);
+router.post('/', auth, requireRole('owner'), vehicleController.create);
+router.patch('/:id', auth, vehicleController.update);
 
 module.exports = router;
