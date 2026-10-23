@@ -1,85 +1,134 @@
 
-import { useEffect, useState } from 'react'
+import { useCallback, useEffect, useState } from 'react'
 import api, { errorMessage } from '../api'
 
-// OWNER: Salasha - #34 VPS-F-008
+// OWNER: Salasha - #34 VPS-F-008, #35 VPS-F-009, #36 VPS-F-010
 export default function StaffEntry() {
+  const [registrationNumber, setRegistrationNumber] = useState('')
   const [slots, setSlots] = useState([])
   const [selectedSlot, setSelectedSlot] = useState('')
   const [loading, setLoading] = useState(true)
+  const [submitting, setSubmitting] = useState(false)
   const [error, setError] = useState('')
+  const [message, setMessage] = useState('')
 
-  useEffect(() => {
-    let cancelled = false
+  const loadAvailableSlots = useCallback(async () => {
+    try {
+      setLoading(true)
+      setError('')
 
-    async function loadAvailableSlots() {
-      try {
-        setLoading(true)
-        setError('')
+      const response = await api.get('/slots', {
+        params: { status: 'Available' },
+      })
 
-        const response = await api.get('/slots', {
-          params: { status: 'Available' },
-        })
+      const data = response.data
+      const availableSlots = Array.isArray(data)
+        ? data
+        : data.slots || data.data || []
 
-        const data = response.data
-        const availableSlots = Array.isArray(data)
-          ? data
-          : data.slots || data.data || []
+      const available = availableSlots.filter(
+        (slot) => slot.status === 'Available'
+      )
 
-        if (!cancelled) {
-          setSlots(
-            availableSlots.filter((slot) => slot.status === 'Available')
-          )
-        }
-      } catch (err) {
-        if (!cancelled) {
-          setError(errorMessage(err))
-        }
-      } finally {
-        if (!cancelled) setLoading(false)
-      }
-    }
+      setSlots(available)
 
-    loadAvailableSlots()
-
-    return () => {
-      cancelled = true
+      // Clear selection if that slot is no longer available.
+      setSelectedSlot((current) =>
+        available.some((slot) => slot._id === current) ? current : ''
+      )
+    } catch (err) {
+      setError(errorMessage(err))
+    } finally {
+      setLoading(false)
     }
   }, [])
+
+  useEffect(() => {
+    loadAvailableSlots()
+  }, [loadAvailableSlots])
+
+  async function handleSubmit(event) {
+    event.preventDefault()
+    setError('')
+    setMessage('')
+
+    const registration = registrationNumber.trim().toUpperCase()
+
+    if (!registration || !selectedSlot) {
+      setError('Enter a registration number and select an available slot.')
+      return
+    }
+
+    try {
+      setSubmitting(true)
+
+      const response = await api.post('/parking/entry', {
+        registrationNumber: registration,
+        slotId: selectedSlot,
+      })
+
+      setMessage(response.data.message || 'Vehicle entry recorded successfully.')
+      setRegistrationNumber('')
+      setSelectedSlot('')
+      await loadAvailableSlots()
+    } catch (err) {
+      setError(errorMessage(err))
+    } finally {
+      setSubmitting(false)
+    }
+  }
 
   return (
     <section>
       <h2>Record vehicle entry</h2>
-      <p>Select an available parking slot for the arriving vehicle.</p>
-
-      {loading && <p>Loading available slots...</p>}
+      <p>Enter the vehicle registration number and select an available slot.</p>
 
       {error && <p role="alert">{error}</p>}
+      {message && <p role="status">{message}</p>}
 
-      {!loading && !error && slots.length === 0 && (
-        <p>No available parking slots.</p>
-      )}
+      <form onSubmit={handleSubmit}>
+        <label>
+          Registration number
+          <input
+            type="text"
+            value={registrationNumber}
+            onChange={(event) => setRegistrationNumber(event.target.value)}
+            placeholder="e.g. KA01AB1234"
+            required
+          />
+        </label>
 
-      {!loading && !error && slots.length > 0 && (
         <label>
           Available slot
           <select
             value={selectedSlot}
             onChange={(event) => setSelectedSlot(event.target.value)}
+            disabled={loading || slots.length === 0}
+            required
           >
-            <option value="">Choose a slot</option>
+            <option value="">
+              {loading ? 'Loading slots...' : 'Choose a slot'}
+            </option>
             {slots.map((slot) => (
-              <option key={slot._id || slot.slotId} value={slot._id || slot.slotId}>
+              <option key={slot._id} value={slot._id}>
                 {slot.slotId}
               </option>
             ))}
           </select>
         </label>
-      )}
 
-      {selectedSlot && <p>Selected slot: {slots.find(
-        (slot) => (slot._id || slot.slotId) === selectedSlot
-      )?.slotId}</p>}
+        {!loading && !error && slots.length === 0 && (
+          <p>No available parking slots.</p>
+        )}
+
+        <button type="submit" disabled={loading || submitting || slots.length === 0}>
+          {submitting ? 'Recording entry...' : 'Record entry'}
+        </button>
+      </form>
+
+      <button type="button" onClick={loadAvailableSlots} disabled={loading}>
+        Refresh available slots
+      </button>
     </section>
   )
 }
