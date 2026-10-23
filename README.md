@@ -20,6 +20,15 @@ npm install
 npm run dev                 # http://localhost:5173
 ```
 
+## Test accounts (staff / admin)
+
+Public registration always creates a **Vehicle Owner**. Create the Staff and Admin logins once with:
+
+```bash
+cd server
+npm run seed      # admin@vps.local / admin123   staff@vps.local / staff123
+```
+
 ## Project structure
 
 ```
