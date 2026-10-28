@@ -1,5 +1,7 @@
-// OWNER: Preksha - #28 VPS-F-003, #29 VPS-F-004
+// OWNER: Preksha - #28 VPS-F-003, #29 VPS-F-004, #46 VPS-F-015
+const mongoose = require('mongoose');
 const Vehicle = require('../models/Vehicle');
+const ParkingSession = require('../models/ParkingSession');
 
 function httpError(status, message) {
   const err = new Error(message);
@@ -51,6 +53,18 @@ async function listVehicles(user) {
 
 // VPS-F-004: Update a vehicle's details (only the owner or an admin may update).
 async function updateVehicle(vehicleId, updates, user) {
+  // Sprint-1 follow-up: reject empty PATCH body (no updatable fields supplied).
+  const allowed = ['registrationNumber', 'make', 'model', 'color'];
+  const hasUpdate = updates && allowed.some((key) => updates[key] !== undefined);
+  if (!hasUpdate) {
+    throw httpError(400, 'Request body must contain at least one updatable field (registrationNumber, make, model, color).');
+  }
+
+  // Sprint-1 follow-up: invalid (non-ObjectId) vehicle id → 404 instead of 500 CastError.
+  if (!mongoose.Types.ObjectId.isValid(vehicleId)) {
+    throw httpError(404, 'Vehicle not found.');
+  }
+
   const vehicle = await Vehicle.findById(vehicleId);
   if (!vehicle) throw httpError(404, 'Vehicle not found.');
 
@@ -59,7 +73,6 @@ async function updateVehicle(vehicleId, updates, user) {
     throw httpError(403, 'You can only update your own vehicles.');
   }
 
-  const allowed = ['registrationNumber', 'make', 'model', 'color'];
   for (const key of allowed) {
     if (updates[key] !== undefined) {
       vehicle[key] = typeof updates[key] === 'string' ? updates[key].trim() : updates[key];
@@ -70,4 +83,32 @@ async function updateVehicle(vehicleId, updates, user) {
   return toPublicVehicle(vehicle);
 }
 
-module.exports = { registerVehicle, listVehicles, updateVehicle, toPublicVehicle };
+// VPS-F-015 (#46): Return parking history for a vehicle.
+// Owners may only view their own vehicles' history; staff/admin may view any.
+async function getHistory(vehicleId, user) {
+  if (!mongoose.Types.ObjectId.isValid(vehicleId)) {
+    throw httpError(404, 'Vehicle not found.');
+  }
+
+  const vehicle = await Vehicle.findById(vehicleId);
+  if (!vehicle) throw httpError(404, 'Vehicle not found.');
+
+  // Authorization: owners can only access their own vehicles.
+  if (user.role === 'owner' && String(vehicle.ownerId) !== user.userId) {
+    throw httpError(403, 'You can only view history for your own vehicles.');
+  }
+
+  const sessions = await ParkingSession.find({ vehicleId: vehicle._id })
+    .sort({ entryTime: -1 })
+    .populate('slotId', 'slotId');
+
+  return sessions.map((s) => ({
+    sessionId: String(s._id),
+    entryTime: s.entryTime,
+    exitTime: s.exitTime || null,
+    status: s.status,
+    slot: s.slotId ? { id: String(s.slotId._id), slotId: s.slotId.slotId } : null,
+  }));
+}
+
+module.exports = { registerVehicle, listVehicles, updateVehicle, getHistory, toPublicVehicle };
