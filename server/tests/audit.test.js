@@ -306,4 +306,24 @@ describe('Audit records free of secrets (#48 VPS-SR-005 / TC-S-005)', () => {
     expect(clean.secret).toBeUndefined();
     expect(clean.nested.password).toBeUndefined();
   });
+
+  it('AuditLog model schema sanitizer strips secrets and redacts raw token/hash values', () => {
+    const { sanitizeSecrets } = jest.requireActual('../src/models/AuditLog');
+    const dirty = {
+      user: 'alice',
+      password: 'mypassword',
+      token: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.xyz.abc',
+      authHeader: 'Bearer some.secret.token',
+      hash: '$2b$10$abcdefghijklmnopqrstuv',
+      nested: { apiKey: 'key-123', label: 'ok' },
+    };
+    const cleaned = sanitizeSecrets(dirty);
+    expect(cleaned.user).toBe('alice');
+    expect(cleaned.password).toBeUndefined();
+    expect(cleaned.token).toBeUndefined();
+    expect(cleaned.authHeader).toBe('[REDACTED]');
+    expect(cleaned.hash).toBe('[REDACTED]');
+    expect(cleaned.nested.apiKey).toBeUndefined();
+    expect(cleaned.nested.label).toBe('ok');
+  });
 });
