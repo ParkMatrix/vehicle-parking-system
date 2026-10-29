@@ -6,6 +6,57 @@ const requireRole = require('../middleware/rbac');
 
 const router = Router();
 
+// VPS-F-011 (#42): Search for a vehicle's active parking session.
+router.get(
+  '/active/:registration',
+  auth,
+  requireRole('staff', 'admin'),
+  async (req, res, next) => {
+    try {
+      const registration = req.params.registration.trim().toUpperCase();
+
+      if (!registration) {
+        return res.status(400).json({
+          error: 'Registration number is required',
+        });
+      }
+
+      const vehicle = await Vehicle.findOne({
+        registrationNumber: registration,
+      });
+
+      if (!vehicle) {
+        return res.status(404).json({
+          error: 'Vehicle not found',
+        });
+      }
+
+      const session = await ParkingSession.findOne({
+        vehicleId: vehicle._id,
+        status: 'active',
+      });
+
+      if (!session) {
+        return res.status(404).json({
+          error: 'No active parking session found',
+        });
+      }
+
+      const slot = await ParkingSlot.findById(session.slotId);
+
+      return res.status(200).json({
+        vehicle: {
+          registrationNumber: vehicle.registrationNumber,
+        },
+        session,
+        slot,
+      });
+    } catch (error) {
+      return next(error);
+    }
+  }
+);
+
 // VPS-F-009 and VPS-F-010: Record vehicle entry and occupy a slot.
 router.post('/entry', auth, requireRole('staff', 'admin'), async (req, res, next) => {
   const { registrationNumber, slotId } = req.body;
