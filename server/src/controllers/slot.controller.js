@@ -1,5 +1,6 @@
 
 const { ParkingSlot, ParkingSession } = require('../models');
+const auditService = require('../services/audit.service');
 
 const SLOT_STATUS = ['Available', 'Occupied', 'Unavailable'];
 
@@ -85,8 +86,16 @@ async function updateStatus(req, res, next) {
       }
     }
 
+    const previousStatus = slot.status;
     slot.status = status;
     await slot.save();
+
+    await auditService.recordAudit({
+      actorId: req.user?.userId,
+      action: 'SLOT_STATUS_UPDATE',
+      result: 'success',
+      details: { slotId: slot.slotId, previousStatus, newStatus: status },
+    });
 
     return res.json(slot);
   } catch (err) {
