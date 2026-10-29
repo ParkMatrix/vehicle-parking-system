@@ -1,0 +1,33 @@
+{
+  "testCase": "TC-NF-001",
+  "issue": "#44 VPS-NF-001",
+  "endpoint": "GET /api/slots",
+  "startedAt": "2026-10-29T18:39:24.429Z",
+  "baseUrl": "http://localhost:5000",
+  "profile": {
+    "totalRequests": 200,
+    "concurrency": 10,
+    "warmupRequests": 10,
+    "profileStatus": "Proposed profile; confirm with team before acceptance"
+  },
+  "results": {
+    "completedRequests": 200,
+    "successfulRequests": 200,
+    "failedRequests": 0,
+    "durationSeconds": 0.77,
+    "throughputRequestsPerSecond": 259.79,
+    "minMs": 14.8,
+    "averageMs": 37.86,
+    "p95Ms": 65.15,
+    "maxMs": 77.42,
+    "targetMs": 2000,
+    "p95TargetMet": true,
+    "allRequestsSuccessful": true,
+    "overallPass": true
+  },
+  "statusCounts": {
+    "200": 200
+  },
+  "errors": [],
+  "note": "Results apply only to this environment and proposed workload; they do not establish performance under other loads."
+}
