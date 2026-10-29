@@ -21,4 +21,20 @@ async function history(req, res) {
   res.json({ history });
 }
 
-module.exports = { create, list, update, history };
+
+async function currentSlot(req, res) {
+  const currentSlot = await vehicleService.getCurrentSlot(
+    req.params.id,
+    req.user
+  );
+
+  res.json({ currentSlot });
+}
+
+module.exports = {
+  create,
+  list,
+  update,
+  history,
+  currentSlot,
+};

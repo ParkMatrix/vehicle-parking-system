@@ -111,4 +111,52 @@ async function getHistory(vehicleId, user) {
   }));
 }
 
-module.exports = { registerVehicle, listVehicles, updateVehicle, getHistory, toPublicVehicle };
+// VPS-F-012: Get the current parking slot for a vehicle.
+async function getCurrentSlot(vehicleId, user) {
+  if (!mongoose.Types.ObjectId.isValid(vehicleId)) {
+    throw httpError(404, 'Vehicle not found.');
+  }
+
+  const vehicle = await Vehicle.findById(vehicleId);
+
+  if (!vehicle) {
+    throw httpError(404, 'Vehicle not found.');
+  }
+
+  // Owners can access only their own vehicles.
+  if (
+    user.role === 'owner' &&
+    String(vehicle.ownerId) !== user.userId
+  ) {
+    throw httpError(403, 'You can only view your own vehicle.');
+  }
+
+  const session = await ParkingSession.findOne({
+    vehicleId: vehicle._id,
+    status: 'active',
+  }).populate('slotId', 'slotId status');
+
+  if (!session) {
+    return null;
+  }
+
+  return {
+    sessionId: String(session._id),
+    entryTime: session.entryTime,
+    slot: session.slotId
+      ? {
+          id: String(session.slotId._id),
+          slotId: session.slotId.slotId,
+          status: session.slotId.status,
+        }
+      : null,
+  };
+}
+module.exports = {
+  registerVehicle,
+  listVehicles,
+  updateVehicle,
+  getHistory,
+  getCurrentSlot,
+  toPublicVehicle,
+};

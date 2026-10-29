@@ -15,5 +15,6 @@ router.get('/', auth, vehicleController.list);
 router.post('/', auth, requireRole('owner'), vehicleController.create);
 router.patch('/:id', auth, vehicleController.update);
 router.get('/:id/history', auth, vehicleController.history);
+router.get('/:id/current-slot', auth, vehicleController.currentSlot);
 
 module.exports = router;
