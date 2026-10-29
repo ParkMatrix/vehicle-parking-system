@@ -1,4 +1,4 @@
-// OWNER: Preksha - #28 VPS-F-003, #29 VPS-F-004
+// OWNER: Preksha - #28 VPS-F-003, #29 VPS-F-004, #46 VPS-F-015
 const vehicleService = require('../services/vehicle.service');
 
 async function create(req, res) {
@@ -16,4 +16,9 @@ async function update(req, res) {
   res.json({ vehicle });
 }
 
-module.exports = { create, list, update };
+async function history(req, res) {
+  const history = await vehicleService.getHistory(req.params.id, req.user);
+  res.json({ history });
+}
+
+module.exports = { create, list, update, history };
