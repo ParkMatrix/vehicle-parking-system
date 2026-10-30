@@ -1,7 +1,6 @@
 const express = require('express');
 const cors = require('cors');
 const morgan = require('morgan');
-const mongoose = require('mongoose');
 const errorHandler = require('./middleware/errorHandler');
 
 const app = express();
@@ -10,10 +9,8 @@ app.use(cors({ origin: process.env.CLIENT_ORIGIN || 'http://localhost:5173' }));
 app.use(express.json());
 if (process.env.NODE_ENV !== 'test') app.use(morgan('dev'));
 
-// Health check (SAD 4.3.2: GET /api/health)
-app.get('/api/health', (req, res) => {
-  res.json({ status: 'ok', db: mongoose.connection.readyState === 1 ? 'connected' : 'disconnected' });
-});
+// Health check (SAD 4.3.2: GET /api/health) - Nishant (#51)
+app.use('/api/health', require('./routes/health.routes'));
 
 // One router per module/owner - add your endpoints inside your own routes file only.
 app.use('/api/auth', require('./routes/auth.routes'));       // Nishant

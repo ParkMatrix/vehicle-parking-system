@@ -7,7 +7,8 @@
     "start": "node src/server.js",
     "dev": "nodemon src/server.js",
     "test": "jest --runInBand",
-    "seed": "node scripts/seed.js"
+    "seed": "node scripts/seed.js",
+    "monitor": "node scripts/uptime-monitor.js"
   },
   "engines": {
     "node": ">=20"
