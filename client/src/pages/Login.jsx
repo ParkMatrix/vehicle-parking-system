@@ -5,7 +5,7 @@ import api, { errorMessage } from '../api'
 import { saveSession } from '../auth'
 
 // Where each role lands after logging in
-const HOME_BY_ROLE = { owner: '/vehicles', staff: '/entry', admin: '/admin/slots' }
+const HOME_BY_ROLE = { owner: '/vehicles', staff: '/entry', admin: '/admin/dashboard' }
 
 export default function Login() {
   const navigate = useNavigate()
