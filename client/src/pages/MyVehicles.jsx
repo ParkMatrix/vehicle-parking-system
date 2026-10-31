@@ -1,4 +1,4 @@
-// OWNER: Preksha - #28 VPS-F-003, #29 VPS-F-004
+// OWNER: Preksha - #28 VPS-F-003, #29 VPS-F-004, #46 VPS-F-015
 import { useEffect, useState } from 'react'
 import api, { errorMessage } from '../api'
 import { getUser } from '../auth'
@@ -24,6 +24,12 @@ export default function MyVehicles() {
   const [editId, setEditId] = useState(null)
   const [editFields, setEditFields] = useState({})
   const [editError, setEditError] = useState('')
+
+  // History state (#46 VPS-F-015)
+  const [historyVehicle, setHistoryVehicle] = useState(null)
+  const [historyLogs, setHistoryLogs] = useState([])
+  const [loadingHistory, setLoadingHistory] = useState(false)
+  const [historyError, setHistoryError] = useState('')
 
   useEffect(() => {
     if (!user) { navigate('/login'); return }
@@ -76,6 +82,27 @@ export default function MyVehicles() {
     } catch (err) {
       setEditError(errorMessage(err))
     }
+  }
+
+  async function viewHistory(v) {
+    setHistoryVehicle(v)
+    setHistoryLogs([])
+    setLoadingHistory(true)
+    setHistoryError('')
+    try {
+      const res = await api.get(`/vehicles/${v.id}/history`)
+      setHistoryLogs(res.data.history || [])
+    } catch (err) {
+      setHistoryError(errorMessage(err))
+    } finally {
+      setLoadingHistory(false)
+    }
+  }
+
+  function closeHistory() {
+    setHistoryVehicle(null)
+    setHistoryLogs([])
+    setHistoryError('')
   }
 
   if (!user) return null
@@ -160,8 +187,11 @@ export default function MyVehicles() {
                     <td style={{ padding: '8px' }}>{v.color || '—'}</td>
                     <td style={{ padding: '8px' }}>
                       {(user.role === 'owner' || user.role === 'admin') && (
-                        <button onClick={() => startEdit(v)}>Edit</button>
+                        <>
+                          <button onClick={() => startEdit(v)}>Edit</button>{' '}
+                        </>
                       )}
+                      <button onClick={() => viewHistory(v)}>History</button>
                     </td>
                   </>
                 )}
@@ -169,6 +199,57 @@ export default function MyVehicles() {
             ))}
           </tbody>
         </table>
+      )}
+
+      {/* History view panel (#46 VPS-F-015) */}
+      {historyVehicle && (
+        <div className="card" style={{ marginTop: '24px' }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
+            <h3 style={{ margin: 0 }}>Parking History: {historyVehicle.registrationNumber}</h3>
+            <button onClick={closeHistory}>Close</button>
+          </div>
+          {loadingHistory && <p>Loading history…</p>}
+          {historyError && <p className="error">{historyError}</p>}
+          {!loadingHistory && historyLogs.length === 0 && (
+            <p className="todo">No parking history recorded for this vehicle.</p>
+          )}
+          {!loadingHistory && historyLogs.length > 0 && (
+            <table className="data-table">
+              <thead>
+                <tr>
+                  <th>Status</th>
+                  <th>Slot</th>
+                  <th>Entry Time</th>
+                  <th>Exit Time</th>
+                </tr>
+              </thead>
+              <tbody>
+                {historyLogs.map((h) => (
+                  <tr key={h.sessionId}>
+                    <td>
+                      <span
+                        style={{
+                          display: 'inline-block',
+                          padding: '2px 8px',
+                          borderRadius: '12px',
+                          fontSize: '12px',
+                          fontWeight: 600,
+                          background: h.status === 'active' ? '#fee2e2' : '#dcfce7',
+                          color: h.status === 'active' ? '#dc2626' : '#16a34a',
+                        }}
+                      >
+                        {h.status === 'active' ? 'Active' : 'Completed'}
+                      </span>
+                    </td>
+                    <td><strong>{h.slot?.slotId || '—'}</strong></td>
+                    <td>{new Date(h.entryTime).toLocaleString()}</td>
+                    <td>{h.exitTime ? new Date(h.exitTime).toLocaleString() : 'Currently parked'}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          )}
+        </div>
       )}
     </section>
   )
