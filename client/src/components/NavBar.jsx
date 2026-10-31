@@ -1,4 +1,4 @@
-import { NavLink, useNavigate } from 'react-router-dom'
+﻿import { NavLink, useNavigate } from 'react-router-dom'
 import { getUser, logout } from '../auth'
 
 export default function NavBar() {
@@ -12,7 +12,7 @@ export default function NavBar() {
       <NavLink to="/slots">Slots</NavLink>
       {role === 'owner' && <NavLink to="/vehicles">My vehicles</NavLink>}
       {(role === 'staff' || role === 'admin') && <NavLink to="/entry">Entry</NavLink>}
-      {(role === 'staff' || role === 'admin') && <NavLink to="/exit">Exit</NavLink>}
+      {(role === 'staff' || role === 'admin') && <NavLink to="/exit">Exit</NavLink>}      {(role === 'staff' || role === 'admin') && <NavLink to="/search-vehicle">Search Vehicle</NavLink>}
       {role === 'admin' && <NavLink to="/admin/dashboard">Dashboard</NavLink>}
       {role === 'admin' && <NavLink to="/admin/slots">Manage slots</NavLink>}
       <span className="spacer" />
@@ -34,3 +34,5 @@ export default function NavBar() {
     </nav>
   )
 }
+
+

@@ -1,4 +1,4 @@
-import { BrowserRouter, Navigate, Route, Routes } from 'react-router-dom'
+﻿import { BrowserRouter, Navigate, Route, Routes } from 'react-router-dom'
 import NavBar from './components/NavBar'
 import Login from './pages/Login'
 import Register from './pages/Register'
@@ -8,6 +8,7 @@ import AdminSlots from './pages/AdminSlots'
 import AdminDashboard from './pages/AdminDashboard'
 import StaffEntry from './pages/StaffEntry'
 import StaffExit from './pages/StaffExit'
+import StaffSearchVehicle from './pages/StaffSearchVehicle'
 
 // Each page lives in its own file under src/pages - edit only your own pages to avoid merge conflicts.
 export default function App() {
@@ -24,10 +25,11 @@ export default function App() {
           <Route path="/admin/slots" element={<AdminSlots />} />
           <Route path="/admin/dashboard" element={<AdminDashboard />} />
           <Route path="/entry" element={<StaffEntry />} />
-          <Route path="/exit" element={<StaffExit />} />
+          <Route path="/exit" element={<StaffExit />} />`r`n          <Route path="/search-vehicle" element={<StaffSearchVehicle />} />
           <Route path="*" element={<p>Page not found.</p>} />
         </Routes>
       </main>
     </BrowserRouter>
   )
 }
+
