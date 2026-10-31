@@ -5,6 +5,10 @@ const errorHandler = require('./middleware/errorHandler');
 
 const app = express();
 
+// VPS-SR-003 (#52): HTTPS only in production - Nishant
+if (process.env.TRUST_PROXY === 'true') app.set('trust proxy', 1);
+app.use(require('./middleware/https').enforceHttps);
+
 app.use(cors({ origin: process.env.CLIENT_ORIGIN || 'http://localhost:5173' }));
 app.use(express.json());
 if (process.env.NODE_ENV !== 'test') app.use(morgan('dev'));
