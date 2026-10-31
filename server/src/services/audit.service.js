@@ -3,6 +3,9 @@
 const mongoose = require('mongoose');
 const AuditLog = require('../models/AuditLog');
 
+const RETENTION_PERIOD_DAYS = AuditLog.RETENTION_PERIOD_DAYS || 365;
+const RETENTION_PERIOD_SECONDS = AuditLog.RETENTION_PERIOD_SECONDS || RETENTION_PERIOD_DAYS * 24 * 60 * 60;
+
 // VPS-SR-005: Never store passwords, tokens or authentication secrets in audit records
 const SENSITIVE_KEYS = [
   'password',
@@ -43,7 +46,7 @@ function sanitize(value) {
 
 // VPS-F-017 (#47): Record audit events for security-sensitive and administrative actions.
 // AC-017: Each applicable event contains actor, action, timestamp, and result.
-async function recordAudit({ actorId = null, action, result, details = null }) {
+async function recordAudit({ actorId = null, action, result, details = null, timestamp = null }) {
   // If in a test environment without active DB and AuditLog isn't mocked, skip to avoid buffering
   if (mongoose.connection.readyState !== 1) {
     const isMocked =
@@ -64,7 +67,7 @@ async function recordAudit({ actorId = null, action, result, details = null }) {
       action,
       result,
       details: sanitizedDetails,
-      timestamp: new Date(),
+      timestamp: timestamp ? new Date(timestamp) : new Date(),
     });
   } catch (err) {
     // Primary application requests must not fail if audit logging encounters an issue
@@ -72,15 +75,31 @@ async function recordAudit({ actorId = null, action, result, details = null }) {
   }
 }
 
-// VPS-F-017 / VPS-NF-006: Retrieve audit records for Admin review
-async function getAuditLogs({ action, result, limit = 100 } = {}) {
+// VPS-F-017 / VPS-NF-006: Retrieve audit records for Admin review with retention and date range filtering
+async function getAuditLogs({ action, result, actorId, startDate, endDate, from, to, limit = 100, page = 1 } = {}) {
   const filter = {};
   if (action) filter.action = action;
   if (result) filter.result = result;
+  if (actorId && mongoose.Types.ObjectId.isValid(actorId)) {
+    filter.actorId = actorId;
+  }
+
+  const start = startDate || from;
+  const end = endDate || to;
+  if (start || end) {
+    filter.timestamp = {};
+    if (start) filter.timestamp.$gte = new Date(start);
+    if (end) filter.timestamp.$lte = new Date(end);
+  }
+
+  const pageNum = Math.max(1, parseInt(page, 10) || 1);
+  const limitNum = Math.min(500, Math.max(1, parseInt(limit, 10) || 100));
+  const skip = (pageNum - 1) * limitNum;
 
   const logs = await AuditLog.find(filter)
     .sort({ timestamp: -1 })
-    .limit(Number(limit) || 100);
+    .skip(skip)
+    .limit(limitNum);
 
   return logs.map((log) => ({
     id: String(log._id),
@@ -92,8 +111,20 @@ async function getAuditLogs({ action, result, limit = 100 } = {}) {
   }));
 }
 
+// VPS-NF-006: Returns retention policy configuration details
+function getRetentionConfig() {
+  return {
+    retentionPeriodDays: RETENTION_PERIOD_DAYS,
+    retentionPeriodSeconds: RETENTION_PERIOD_SECONDS,
+    minimumRetentionYears: 1,
+  };
+}
+
 module.exports = {
   recordAudit,
   getAuditLogs,
+  getRetentionConfig,
   sanitize,
+  RETENTION_PERIOD_DAYS,
+  RETENTION_PERIOD_SECONDS,
 };

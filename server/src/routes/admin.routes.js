@@ -8,6 +8,11 @@ const auditService = require('../services/audit.service');
 
 const router = Router();
 
+// VPS-NF-006 (#49): Inspect audit retention policy (Admin only)
+router.get('/audit/retention', auth, requireRole('admin'), (req, res) => {
+  res.json(auditService.getRetentionConfig());
+});
+
 // VPS-F-017 (#47) / VPS-NF-006 (#49): Review audit records (Admin only)
 router.get('/audit', auth, requireRole('admin'), async (req, res, next) => {
   try {

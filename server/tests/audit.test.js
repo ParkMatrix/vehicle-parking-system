@@ -1,5 +1,6 @@
 // Tests for #47 VPS-F-017 (TC-F-017): Audit event recording for sensitive and admin actions
 // Tests for #48 VPS-SR-005 (TC-S-005): Audit records free of secrets
+// Tests for #49 VPS-NF-006 (TC-NF-005): Audit retention (>= 1 year) and retrieval
 const request = require('supertest');
 const jwt = require('jsonwebtoken');
 const bcrypt = require('bcryptjs');
@@ -67,37 +68,54 @@ jest.mock('../src/models/ParkingSession', () => ({
 }));
 
 // Mock AuditLog model
-jest.mock('../src/models/AuditLog', () => ({
-  create: jest.fn(async (doc) => {
-    const log = {
-      _id: mockObjectId(auditLogs.length + 100),
-      timestamp: doc.timestamp || new Date(),
-      ...doc,
-    };
-    auditLogs.push(log);
-    return log;
-  }),
-  find: jest.fn((filter = {}) => {
-    const query = {
-      sort: () => query,
-      limit: (n) => {
+jest.mock('../src/models/AuditLog', () => {
+  const RETENTION_PERIOD_DAYS = 365;
+  const RETENTION_PERIOD_SECONDS = RETENTION_PERIOD_DAYS * 24 * 60 * 60;
+
+  return {
+    RETENTION_PERIOD_DAYS,
+    RETENTION_PERIOD_SECONDS,
+    create: jest.fn(async (doc) => {
+      const log = {
+        _id: mockObjectId(auditLogs.length + 100),
+        timestamp: doc.timestamp ? new Date(doc.timestamp) : new Date(),
+        ...doc,
+      };
+      auditLogs.push(log);
+      return log;
+    }),
+    find: jest.fn((filter = {}) => {
+      let skipCount = 0;
+      const execute = () => {
         let results = [...auditLogs];
         if (filter.action) results = results.filter((l) => l.action === filter.action);
         if (filter.result) results = results.filter((l) => l.result === filter.result);
+        if (filter.actorId) results = results.filter((l) => String(l.actorId) === String(filter.actorId));
+        if (filter.timestamp) {
+          if (filter.timestamp.$gte) {
+            results = results.filter((l) => new Date(l.timestamp) >= new Date(filter.timestamp.$gte));
+          }
+          if (filter.timestamp.$lte) {
+            results = results.filter((l) => new Date(l.timestamp) <= new Date(filter.timestamp.$lte));
+          }
+        }
         results.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
-        return Promise.resolve(results.slice(0, n));
-      },
-      then: (resolve, reject) => {
-        let results = [...auditLogs];
-        if (filter.action) results = results.filter((l) => l.action === filter.action);
-        if (filter.result) results = results.filter((l) => l.result === filter.result);
-        results.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
-        return Promise.resolve(results).then(resolve, reject);
-      },
-    };
-    return query;
-  }),
-}));
+        if (skipCount > 0) results = results.slice(skipCount);
+        return results;
+      };
+      const query = {
+        sort: () => query,
+        skip: (n) => {
+          skipCount = Number(n) || 0;
+          return query;
+        },
+        limit: (n) => Promise.resolve(execute().slice(0, n)),
+        then: (resolve, reject) => Promise.resolve(execute()).then(resolve, reject),
+      };
+      return query;
+    }),
+  };
+});
 
 const SECRET = 'test-secret-audit';
 process.env.JWT_SECRET = SECRET;
@@ -212,7 +230,6 @@ describe('Audit event recording (#47 VPS-F-017 / TC-F-017)', () => {
     expect(res.body.logs).toBeDefined();
     expect(res.body.logs.length).toBeGreaterThanOrEqual(2);
 
-    // Expected: Each event has actor, action, timestamp and result. Failed login and slot change are both present.
     const loginFail = res.body.logs.find((l) => l.action === 'AUTH_LOGIN' && l.result === 'failure');
     const slotChange = res.body.logs.find((l) => l.action === 'SLOT_STATUS_UPDATE');
 
@@ -325,5 +342,147 @@ describe('Audit records free of secrets (#48 VPS-SR-005 / TC-S-005)', () => {
     expect(cleaned.hash).toBe('[REDACTED]');
     expect(cleaned.nested.apiKey).toBeUndefined();
     expect(cleaned.nested.label).toBe('ok');
+  });
+});
+
+// ---------- TC-NF-005: Audit retention and retrieval (#49 VPS-NF-006) ----------
+
+describe('Audit retention and retrieval (#49 VPS-NF-006 / TC-NF-005)', () => {
+  it('TC-NF-005 step 1: DB/TTL configuration guarantees minimum 1 year (365 days) retention with no earlier automatic deletion', () => {
+    const actualModel = jest.requireActual('../src/models/AuditLog');
+    expect(actualModel.RETENTION_PERIOD_DAYS).toBeGreaterThanOrEqual(365);
+    expect(actualModel.RETENTION_PERIOD_SECONDS).toBeGreaterThanOrEqual(365 * 24 * 60 * 60);
+
+    const indexes = actualModel.schema.indexes();
+    const ttlIndex = indexes.find(
+      ([fields, options]) => fields.timestamp === 1 && options && options.expireAfterSeconds !== undefined
+    );
+
+    expect(ttlIndex).toBeDefined();
+    expect(ttlIndex[1].expireAfterSeconds).toBeGreaterThanOrEqual(31536000); // 365 days in seconds
+  });
+
+  it('GET /api/admin/audit/retention exposes retention policy details to admin and rejects unauthorized access', async () => {
+    const res = await request(app)
+      .get('/api/admin/audit/retention')
+      .set('Authorization', `Bearer ${adminToken}`);
+
+    expect(res.status).toBe(200);
+    expect(res.body.retentionPeriodDays).toBe(365);
+    expect(res.body.minimumRetentionYears).toBe(1);
+    expect(res.body.retentionPeriodSeconds).toBe(31536000);
+
+    // Non-admin rejected
+    const staffRes = await request(app)
+      .get('/api/admin/audit/retention')
+      .set('Authorization', `Bearer ${staffToken}`);
+    expect(staffRes.status).toBe(403);
+  });
+
+  it('TC-NF-005 step 2: inserts back-dated audit records (e.g. 11 months old) and retrieves them via Admin view', async () => {
+    const elevenMonthsAgo = new Date();
+    elevenMonthsAgo.setMonth(elevenMonthsAgo.getMonth() - 11);
+
+    const sixMonthsAgo = new Date();
+    sixMonthsAgo.setMonth(sixMonthsAgo.getMonth() - 6);
+
+    // Insert back-dated audit records within the retention window
+    auditLogs.push(
+      {
+        _id: mockObjectId(201),
+        actorId: mockObjectId(1),
+        action: 'SLOT_STATUS_UPDATE',
+        result: 'success',
+        timestamp: elevenMonthsAgo,
+        details: { slotId: 'A-01', previousStatus: 'Available', newStatus: 'Unavailable' },
+      },
+      {
+        _id: mockObjectId(202),
+        actorId: null,
+        action: 'AUTH_LOGIN',
+        result: 'failure',
+        timestamp: sixMonthsAgo,
+        details: { email: 'unknown@example.com', reason: 'Invalid email or password.' },
+      },
+      {
+        _id: mockObjectId(203),
+        actorId: mockObjectId(1),
+        action: 'AUTH_LOGIN',
+        result: 'success',
+        timestamp: new Date(),
+        details: { email: 'admin@vps.local' },
+      }
+    );
+
+    // Retrieve via Admin view
+    const res = await request(app)
+      .get('/api/admin/audit')
+      .set('Authorization', `Bearer ${adminToken}`);
+
+    expect(res.status).toBe(200);
+    expect(res.body.logs.length).toBeGreaterThanOrEqual(3);
+
+    // Verify 11-month-old record is retrievable with actor, action, timestamp, and outcome (result)
+    const oldRecord = res.body.logs.find((l) => l.id === mockObjectId(201));
+    expect(oldRecord).toBeDefined();
+    expect(oldRecord.actorId).toBe(mockObjectId(1));
+    expect(oldRecord.action).toBe('SLOT_STATUS_UPDATE');
+    expect(oldRecord.result).toBe('success');
+    expect(new Date(oldRecord.timestamp).getTime()).toBe(elevenMonthsAgo.getTime());
+    expect(oldRecord.details).toMatchObject({ slotId: 'A-01' });
+
+    // Verify 6-month-old failure record is retrieved
+    const midRecord = res.body.logs.find((l) => l.id === mockObjectId(202));
+    expect(midRecord).toBeDefined();
+    expect(midRecord.result).toBe('failure');
+  });
+
+  it('retrieves audit records filtered by date range (startDate / endDate)', async () => {
+    const d1 = new Date('2025-01-15T10:00:00Z');
+    const d2 = new Date('2025-06-15T10:00:00Z');
+    const d3 = new Date('2025-11-15T10:00:00Z');
+
+    auditLogs.push(
+      { _id: mockObjectId(301), action: 'A1', result: 'success', timestamp: d1 },
+      { _id: mockObjectId(302), action: 'A2', result: 'success', timestamp: d2 },
+      { _id: mockObjectId(303), action: 'A3', result: 'success', timestamp: d3 }
+    );
+
+    const res = await request(app)
+      .get('/api/admin/audit')
+      .query({ startDate: '2025-05-01T00:00:00Z', endDate: '2025-07-01T00:00:00Z' })
+      .set('Authorization', `Bearer ${adminToken}`);
+
+    expect(res.status).toBe(200);
+    expect(res.body.logs).toHaveLength(1);
+    expect(res.body.logs[0].id).toBe(mockObjectId(302));
+  });
+
+  it('supports pagination with page and limit for audit retention retrieval', async () => {
+    for (let i = 1; i <= 5; i++) {
+      auditLogs.push({
+        _id: mockObjectId(400 + i),
+        action: `ACTION_${i}`,
+        result: 'success',
+        timestamp: new Date(Date.now() - i * 10000),
+      });
+    }
+
+    const resPage1 = await request(app)
+      .get('/api/admin/audit')
+      .query({ limit: 2, page: 1 })
+      .set('Authorization', `Bearer ${adminToken}`);
+
+    expect(resPage1.status).toBe(200);
+    expect(resPage1.body.logs).toHaveLength(2);
+
+    const resPage2 = await request(app)
+      .get('/api/admin/audit')
+      .query({ limit: 2, page: 2 })
+      .set('Authorization', `Bearer ${adminToken}`);
+
+    expect(resPage2.status).toBe(200);
+    expect(resPage2.body.logs).toHaveLength(2);
+    expect(resPage2.body.logs[0].id).not.toBe(resPage1.body.logs[0].id);
   });
 });

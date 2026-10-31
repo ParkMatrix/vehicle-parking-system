@@ -1,6 +1,11 @@
 // SAD 4.2: AuditLog (auditId, actorId, action, timestamp, result) -> collection "auditLogs"
 // VPS-SR-005 (#48): never store passwords, tokens or other secrets in an audit record.
+// VPS-NF-006 (#49): retain audit records for at least 1 year (365 days) without earlier automatic deletion.
 const mongoose = require('mongoose');
+
+// VPS-NF-006: Audit retention minimum 1 year (365 days)
+const RETENTION_PERIOD_DAYS = 365;
+const RETENTION_PERIOD_SECONDS = RETENTION_PERIOD_DAYS * 24 * 60 * 60; // 31,536,000 seconds
 
 const SENSITIVE_KEY_PATTERNS = [
   'password',
@@ -69,5 +74,10 @@ auditLogSchema.pre('save', function () {
   }
 });
 
+// VPS-NF-006 (#49): TTL index enforcing retention for at least 1 year (365 days)
+auditLogSchema.index({ timestamp: 1 }, { expireAfterSeconds: RETENTION_PERIOD_SECONDS });
+
 module.exports = mongoose.model('AuditLog', auditLogSchema);
 module.exports.sanitizeSecrets = sanitizeSecrets;
+module.exports.RETENTION_PERIOD_DAYS = RETENTION_PERIOD_DAYS;
+module.exports.RETENTION_PERIOD_SECONDS = RETENTION_PERIOD_SECONDS;
