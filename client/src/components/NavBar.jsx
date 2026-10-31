@@ -13,6 +13,7 @@ export default function NavBar() {
       {role === 'owner' && <NavLink to="/vehicles">My vehicles</NavLink>}
       {(role === 'staff' || role === 'admin') && <NavLink to="/entry">Entry</NavLink>}
       {(role === 'staff' || role === 'admin') && <NavLink to="/exit">Exit</NavLink>}
+      {role === 'admin' && <NavLink to="/admin/dashboard">Dashboard</NavLink>}
       {role === 'admin' && <NavLink to="/admin/slots">Manage slots</NavLink>}
       <span className="spacer" />
       {user ? (

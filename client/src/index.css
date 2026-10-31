@@ -108,3 +108,18 @@ button:disabled { opacity: 0.6; cursor: default; }
   background-color: #e5e7eb;
   border-color: #9ca3af;
 }
+
+/* Admin dashboard (Nishant #50) */
+.dash-header { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+.stat-row { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 12px; margin: 16px 0 24px; }
+.stat { background: var(--card); border: 1px solid #d0d7de; border-left-width: 4px; border-radius: 8px; padding: 14px 16px; display: flex; flex-direction: column; gap: 4px; }
+.stat.available { border-left-color: var(--available); }
+.stat.occupied { border-left-color: var(--occupied); }
+.stat.unavailable { border-left-color: var(--unavailable); }
+.stat-label { font-size: 13px; color: var(--muted); }
+.stat-value { font-size: 28px; font-weight: 700; }
+.stat-sub { font-size: 13px; color: var(--muted); }
+.data-table { width: 100%; border-collapse: collapse; background: var(--card); border: 1px solid #d0d7de; border-radius: 8px; overflow: hidden; }
+.data-table th, .data-table td { text-align: left; padding: 10px 12px; border-bottom: 1px solid #eaeef2; font-size: 14px; }
+.data-table th { background: #f6f8fa; color: var(--muted); font-weight: 600; }
+.data-table tr:last-child td { border-bottom: none; }

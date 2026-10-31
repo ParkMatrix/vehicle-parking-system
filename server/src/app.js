@@ -21,6 +21,7 @@ app.use('/api/vehicles', require('./routes/vehicle.routes')); // Preksha
 app.use('/api/slots', require('./routes/slot.routes'));       // Siddesh
 app.use('/api/parking', require('./routes/parking.routes'));  // Salasha
 app.use('/api/admin', require('./routes/admin.routes'));      // Sprint 2
+app.use('/api/admin', require('./routes/occupancy.routes'));  // Nishant (#50)
 
 app.use('/api', (req, res) => res.status(404).json({ error: 'Not found' }));
 app.use(errorHandler);

@@ -5,6 +5,7 @@ import Register from './pages/Register'
 import MyVehicles from './pages/MyVehicles'
 import SlotGrid from './pages/SlotGrid'
 import AdminSlots from './pages/AdminSlots'
+import AdminDashboard from './pages/AdminDashboard'
 import StaffEntry from './pages/StaffEntry'
 import StaffExit from './pages/StaffExit'
 
@@ -21,6 +22,7 @@ export default function App() {
           <Route path="/vehicles" element={<MyVehicles />} />
           <Route path="/slots" element={<SlotGrid />} />
           <Route path="/admin/slots" element={<AdminSlots />} />
+          <Route path="/admin/dashboard" element={<AdminDashboard />} />
           <Route path="/entry" element={<StaffEntry />} />
           <Route path="/exit" element={<StaffExit />} />
           <Route path="*" element={<p>Page not found.</p>} />
