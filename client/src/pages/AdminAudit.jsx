@@ -6,7 +6,7 @@ import { useNavigate } from 'react-router-dom'
 
 export default function AdminAudit() {
   const navigate = useNavigate()
-  const user = getUser()
+  const [user] = useState(getUser)
   const [logs, setLogs] = useState([])
   const [retention, setRetention] = useState(null)
   const [loading, setLoading] = useState(true)
