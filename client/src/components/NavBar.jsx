@@ -15,6 +15,7 @@ export default function NavBar() {
       {(role === 'staff' || role === 'admin') && <NavLink to="/exit">Exit</NavLink>}
       {role === 'admin' && <NavLink to="/admin/dashboard">Dashboard</NavLink>}
       {role === 'admin' && <NavLink to="/admin/slots">Manage slots</NavLink>}
+      {role === 'admin' && <NavLink to="/admin/audit">Audit logs</NavLink>}
       <span className="spacer" />
       {user ? (
         <button
