@@ -1,100 +1,88 @@
-# Vehicle Parking System (VPS) â€” Branch Coverage Report
+# Vehicle Parking System (VPS) — Branch Coverage Report
 
 **Project:** Vehicle Parking System (MERN Stack)  
 **Deliverable:** Part-3: Branch Coverage Report  
 **Organization:** ParkMatrix (Team 5)  
-**Date:** 5th November 2026 (Execution Window: 2nd Nov â€“ 6th Nov 2026)  
-**Engine:** Jest v30.5.2 & Istanbul Code Coverage Runner  
+**Date:** 5th November 2026; numbers re-checked on `main` on 16th November 2026  
+**Tool:** Jest 30.5.2 with the built-in Istanbul coverage (`npx jest --coverage`)  
 **Authors / Team 5:**
-- Preksha C M (`Preksha-a11y`) â€” QA Lead, Test Engineer
-- Nishant H (`Nishant-Hegde`) â€” Product Owner, Developer, Test Engineer
-- Siddesh V S (`siddeshvs351`) â€” Dev Lead, Developer, Test Engineer
-- Salasha V (`salashav`) â€” Security Tester, Developer, Test Engineer
+- Preksha C M (`Preksha-a11y`) — QA Lead, Test Engineer
+- Nishant H (`Nishant-Hegde`) — Product Owner, Developer, Test Engineer
+- Siddesh V S (`siddeshvs351`) — Dev Lead, Developer, Test Engineer
+- Salasha V (`salashav`) — Security Tester, Developer, Test Engineer
 
 ---
 
-## 1. Executive Summary
+## 1. Summary
 
-This report provides in-depth analysis of conditional decision branch coverage across the Vehicle Parking System (VPS). 
+| Metric | Covered / Total | Coverage | Target |
+| :--- | :---: | :---: | :---: |
+| Branches (backend) | 265/393 | **67.43%** | ≥ 60% |
 
-| Metric | Total Evaluated | Traversed in Tests | Traversal Percentage | Compliance Status |
-| :--- | :---: | :---: | :---: | :---: |
-| **Total Conditional Branches** | **369** | **245** | **66.39%** | **ADEQUATE (> 60% SLA)** |
-| **Security-Critical Gates** | **15** | **15** | **100.0%** | **CRITICAL COMPLIANCE** |
-| **Core State Invariant Gates** | **28** | **28** | **100.0%** | **CRITICAL COMPLIANCE** |
+Correction: the first version of this report gave 245/369 = 66.39%; the numbers above are a fresh run of `main`.
 
----
+## 2. Branches per file
 
-## 2. Security-Critical Paths with 100% Branch Coverage
-
-| Module | Branches | Coverage | Decision Logic Evaluated |
+| File | Covered / Total | % Branch | Notes |
 | :--- | :---: | :---: | :--- |
-| `src/middleware/https.js` | 11 / 11 | **100%** | Development bypass, production HTTPS redirect, HSTS header injection, credentials rejection on HTTP, proxy trust evaluation. |
-| `src/middleware/rbac.js` | 4 / 4 | **100%** | Role authorization verification: user role matches allowed roles $	o$ `next()`, unpermitted role $	o$ HTTP 403. |
-| `src/controllers/auth.controller.js` | 0 | **100%** | Direct registration and login request dispatch. |
-| `src/routes/admin.routes.js` | 0 | **100%** | Admin role gating and controller binding. |
-| `src/routes/slot.routes.js` | 0 | **100%** | Public vs Admin slot route dispatches. |
-| `src/routes/vehicle.routes.js` | 0 | **100%** | Owner vehicle route binding and user context passing. |
+| `scripts/check-slot-session-consistency.js` | 19/24 | 79.16% |  |
+| `scripts/uptime-monitor.js` | 18/37 | 48.64% | Command-line part run manually |
+| `src/app.js` | 4/6 | 66.66% |  |
+| `src/controllers/slot.controller.js` | 11/24 | 45.83% | Validation errors not unit tested |
+| `src/createServer.js` | 8/15 | 53.33% | Production certificate branch |
+| `src/middleware/auth.js` | 5/6 | 83.33% |  |
+| `src/middleware/errorHandler.js` | 28/43 | 65.11% | Fallbacks for unusual error shapes |
+| `src/middleware/https.js` | 11/11 | 100% | All security decisions covered |
+| `src/middleware/rbac.js` | 4/4 | 100% | All role decisions covered |
+| `src/models/AuditLog.js` | 18/23 | 78.26% |  |
+| `src/routes/health.routes.js` | 5/6 | 83.33% |  |
+| `src/routes/parking.routes.js` | 9/26 | 34.61% | Entry/exit handlers only reached by access-control tests |
+| `src/services/audit.service.js` | 47/65 | 72.3% |  |
+| `src/services/auth.service.js` | 26/31 | 83.87% |  |
+| `src/services/occupancy.service.js` | 7/11 | 63.63% |  |
+| `src/services/vehicle.service.js` | 45/61 | 73.77% |  |
+| **All files** | **265/393** | **67.43%** | |
 
----
+Files with no branches (models, `auth.controller.js`, `vehicle.controller.js`, `admin.routes.js`, `auth.routes.js`, `occupancy.routes.js`, `slot.routes.js`, `vehicle.routes.js`) are left out of the table.
 
-## 3. Module-by-Module Branch Analysis
+## 3. Key decision points tested
 
-| File / Module | Total Branches | Covered | % Traversed | Path Risk Category |
-| :--- | :---: | :---: | :---: | :--- |
-| `scripts/uptime-monitor.js` | 37 | 17 | 45.94% | Low Risk / Defensive |
-| `src/app.js` | 6 | 4 | 66.66% | Moderate |
-| `src/createServer.js` | 15 | 8 | 53.33% | Low Risk / Defensive |
-| `src/controllers/auth.controller.js` | 0 | 0 | 100% | High (Fully Covered) |
-| `src/controllers/slot.controller.js` | 24 | 11 | 45.83% | Low Risk / Defensive |
-| `src/controllers/vehicle.controller.js` | 0 | 0 | 100% | High (Fully Covered) |
-| `src/middleware/auth.js` | 6 | 5 | 83.33% | High (Fully Covered) |
-| `src/middleware/errorHandler.js` | 43 | 28 | 65.11% | Moderate |
-| `src/middleware/https.js` | 11 | 11 | 100% | High (Fully Covered) |
-| `src/middleware/rbac.js` | 4 | 4 | 100% | High (Fully Covered) |
-| `src/models/AuditLog.js` | 23 | 18 | 78.26% | Moderate |
-| `src/models/ParkingSession.js` | 0 | 0 | 100% | High (Fully Covered) |
-| `src/models/ParkingSlot.js` | 0 | 0 | 100% | High (Fully Covered) |
-| `src/models/User.js` | 0 | 0 | 100% | High (Fully Covered) |
-| `src/models/Vehicle.js` | 0 | 0 | 100% | High (Fully Covered) |
-| `src/models/index.js` | 0 | 0 | 100% | High (Fully Covered) |
-| `src/routes/admin.routes.js` | 0 | 0 | 100% | High (Fully Covered) |
-| `src/routes/auth.routes.js` | 0 | 0 | 100% | High (Fully Covered) |
-| `src/routes/health.routes.js` | 6 | 5 | 83.33% | High (Fully Covered) |
-| `src/routes/occupancy.routes.js` | 0 | 0 | 100% | High (Fully Covered) |
-| `src/routes/parking.routes.js` | 26 | 9 | 34.61% | Low Risk / Defensive |
-| `src/routes/slot.routes.js` | 0 | 0 | 100% | High (Fully Covered) |
-| `src/routes/vehicle.routes.js` | 0 | 0 | 100% | High (Fully Covered) |
-| `src/services/audit.service.js` | 65 | 47 | 72.3% | Moderate |
-| `src/services/auth.service.js` | 31 | 26 | 83.87% | High (Fully Covered) |
-| `src/services/occupancy.service.js` | 11 | 7 | 63.63% | Moderate |
-| `src/services/vehicle.service.js` | 61 | 45 | 73.77% | Moderate |
+### 3.1 HTTPS (`https.js`, 11/11)
+- Development → plain HTTP allowed.
+- Production, plain HTTP page request → 301 redirect to `https://`.
+- Production, credentials over plain HTTP → 403, no token issued.
+- Behind a trusted proxy with `X-Forwarded-Proto: https` → allowed, HSTS header sent.
+- Spoofed `X-Forwarded-Proto` with no trusted proxy → ignored.
 
----
+### 3.2 Role check (`rbac.js`, 4/4)
+- Role allowed → request continues.
+- Role not allowed → 403.
 
-## 4. Branch Evaluation by Functional Category
+### 3.3 Active vehicle search (`parking.routes.js`)
+- Vehicle not found → 404.
+- No active session → 404.
+- Staff/Admin → session and slot returned; Owner → 403.
 
-### 4.1 Transport & Network Security (`https.js` â€” 100%)
-- **Branch 1:** `NODE_ENV === 'production'` vs `development` $	o$ Both paths tested.
-- **Branch 2:** Plain HTTP page request $	o$ Returns HTTP 301 Redirect with Location header.
-- **Branch 3:** Plain HTTP credential submission $	o$ Refuses with HTTP 403 Forbidden.
-- **Branch 4:** Request behind trusted proxy (`X-Forwarded-Proto`) $	o$ Accepts and applies HSTS header.
+### 3.4 Slot status update (`slot.controller.js`)
+- Admin changes status → saved and written to the audit log.
+- Non-admin → 403 (role check).
 
-### 4.2 Role-Based Access Control (`rbac.js` â€” 100%)
-- **Branch 1:** User role is in permitted roles array $	o$ Grants execution to route handler.
-- **Branch 2:** User role is not in permitted roles array $	o$ Rejects with HTTP 403 `Access denied`.
+### 3.5 Login (`auth.service.js`, 26/31)
+- Email already registered → 409.
+- User not found or wrong password → 401 with the same message.
+- Valid credentials → JWT issued, user returned without the password hash.
 
-### 4.3 Authentication & Password Logic (`auth.service.js` â€” 83.87%)
-- **Branch 1:** Email already exists $	o$ Rejects with HTTP 409 Conflict.
-- **Branch 2:** User not found during login $	o$ Rejects with HTTP 401 Unauthorized.
-- **Branch 3:** Password mismatch $	o$ Rejects with HTTP 401 without revealing field discrepancy.
-- **Branch 4:** Valid credentials $	o$ Generates JWT and sanitizes payload.
+### 3.6 Audit redaction (`AuditLog.js` 18/23, `audit.service.js` 47/65)
+- Key is sensitive (`password`, `passwordHash`, `token`, `secret`, `authorization`) → `[REDACTED]`.
+- Nested object → checked recursively.
+- Other values → stored unchanged.
 
-### 4.4 Audit Trail Secret Redaction (`AuditLog.js` â€” 78.26%)
-- **Branch 1:** Key is in blacklist (`password`, `token`, `secret`, `authorization`) $	o$ Replaces with `[REDACTED]`.
-- **Branch 2:** Value is a nested JSON object $	o$ Recursively parses child keys.
-- **Branch 3:** Value is a primitive $	o$ Persists unchanged.
+## How to reproduce
 
-### 4.5 Error Classifier (`errorHandler.js` â€” 65.11%)
-- Categorizes Mongoose validation errors (400), CastError (400), duplicate key error 11000 (409), JWT errors (401), and internal errors (500).
-- Uncovered branches consist of catch-all fallbacks for unrecognized runtime exception types.
+```
+cd server
+npm ci
+npm test                      # 13 suites, 148 tests
+npx jest --runInBand --coverage
+```
+Tests mock the Mongoose models, so no MongoDB instance is needed. The same `npm test` runs in GitHub Actions (`.github/workflows/ci.yml`) on every pull request.
