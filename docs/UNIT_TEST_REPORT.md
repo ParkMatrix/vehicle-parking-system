@@ -1,125 +1,97 @@
-# Vehicle Parking System (VPS) â€” Unit Test Execution Report
+# Vehicle Parking System (VPS) — Unit Test Execution Report
 
 **Project:** Vehicle Parking System (MERN Stack)  
 **Deliverable:** Part-3: Unit Test Execution Report  
 **Organization:** ParkMatrix (Team 5)  
-**Date:** 5th November 2026 (Execution Window: 2nd Nov â€“ 6th Nov 2026)  
-**Status:** **100% PASSED (142 of 142 Tests Passing, 0 Failures)**  
+**Date:** 5th November 2026; numbers re-checked on `main` on 16th November 2026  
+**Status:** **148 of 148 tests passing, 0 failures**  
 **Authors / Team 5:**
-- Preksha C M (`Preksha-a11y`) â€” QA Lead, Test Engineer
-- Nishant H (`Nishant-Hegde`) â€” Product Owner, Developer, Test Engineer
-- Siddesh V S (`siddeshvs351`) â€” Dev Lead, Developer, Test Engineer
-- Salasha V (`salashav`) â€” Security Tester, Developer, Test Engineer
+- Preksha C M (`Preksha-a11y`) — QA Lead, Test Engineer
+- Nishant H (`Nishant-Hegde`) — Product Owner, Developer, Test Engineer
+- Siddesh V S (`siddeshvs351`) — Dev Lead, Developer, Test Engineer
+- Salasha V (`salashav`) — Security Tester, Developer, Test Engineer
 
 ---
 
-## 1. Executive Summary
+## 1. Summary
 
-This report documents the execution of the automated unit test suite for the Vehicle Parking System (VPS). The test suite comprises **12 distinct test suites** and **142 test cases**, executed via Jest v30.5.2 with Supertest in an isolated in-memory test environment.
+The automated backend test suite was run with Jest 30.5.2 and Supertest. Models are mocked, so the tests run without a database.
 
-### Summary Metrics
-| Metric | Value | Compliance Status |
-| :--- | :---: | :--- |
-| **Total Test Suites** | **12** | 12 Passed, 0 Failed, 0 Skipped |
-| **Total Test Cases** | **142** | 142 Passed, 0 Failed (100% Pass Rate) |
-| **Execution Duration** | **11.06 s** | Meets < 60s CI performance target |
-| **Snapshot Tests** | **0** | No UI snapshot drift |
-| **Failures / Errors** | **0** | Zero critical or high-severity defects |
-| **Exit Quality Gate** | **PASSED** | 100% Criteria Met for Production Release |
+| Metric | Value |
+| :--- | :---: |
+| Test suites | **13** (13 passed, 0 failed) |
+| Test cases | **148** (148 passed, 0 failed, 0 skipped) |
+| Run time (`npm test`, `--runInBand`) | about 5 s |
+| Snapshot tests | 0 |
 
----
+Correction: the first version of this report listed 12 suites and 142 tests; a run of `main` gives 13 suites and 148 tests (`slot-session-consistency.test.js`, 6 tests, was missing from the list).
 
-## 2. Test Suite Breakdown
+## 2. Test suite breakdown
 
-| # | Test Suite | Target Requirements | Tests | Duration | Result |
-| :-: | :--- | :--- | :-: | :-: | :-: |
-| 1 | `audit.test.js` | VPS-F-017, VPS-SR-005, VPS-NF-006 | 15 | 2.95s | **PASS** |
-| 2 | `auth.test.js` | VPS-F-001, VPS-F-002, VPS-SR-004 | 12 | 1.60s | **PASS** |
-| 3 | `rbac-matrix.test.js` | VPS-SR-001, VPS-SR-002, VPS-NF-003 | 50 | 0.92s | **PASS** |
-| 4 | `https.test.js` | VPS-SR-003 | 7 | 0.49s | **PASS** |
-| 5 | `vehicle.test.js` | VPS-F-003, VPS-F-004 | 21 | 0.81s | **PASS** |
-| 6 | `occupancy.test.js` | VPS-F-005, VPS-F-006, VPS-F-007, VPS-F-016 | 5 | 0.60s | **PASS** |
-| 7 | `health.test.js` | VPS-NF-002 | 4 | 0.65s | **PASS** |
-| 8 | `auth-rbac.test.js` | VPS-SR-001, VPS-SR-002 | 7 | 0.72s | **PASS** |
-| 9 | `error-messages.test.js` | VPS-NF-005 | 6 | 0.57s | **PASS** |
-| 10 | `parking-active.test.js` | VPS-F-011, VPS-F-012, VPS-F-018 | 5 | 0.78s | **PASS** |
-| 11 | `parking-session.test.js` | VPS-F-009, VPS-F-010, VPS-F-013, VPS-F-014 | 3 | 0.44s | **PASS** |
-| 12 | `uptime-monitor.test.js` | VPS-NF-002 | 7 | 0.12s | **PASS** |
+| # | Test suite | Requirements | Tests | Result |
+| :-: | :--- | :--- | :-: | :-: |
+| 1 | `audit.test.js` | VPS-F-017, VPS-SR-005, VPS-NF-006 (incl. slot status change) | 15 | PASS |
+| 2 | `auth-rbac.test.js` | VPS-SR-001, VPS-SR-002 | 7 | PASS |
+| 3 | `auth.test.js` | VPS-F-001, VPS-F-002, VPS-SR-004 | 12 | PASS |
+| 4 | `error-messages.test.js` | VPS-NF-005 | 6 | PASS |
+| 5 | `health.test.js` | VPS-NF-002 | 4 | PASS |
+| 6 | `https.test.js` | VPS-SR-003 | 7 | PASS |
+| 7 | `occupancy.test.js` | VPS-F-016 | 5 | PASS |
+| 8 | `parking-active.test.js` | VPS-F-011, VPS-F-012 | 5 | PASS |
+| 9 | `parking-session.test.js` | VPS-F-018 | 3 | PASS |
+| 10 | `rbac-matrix.test.js` | VPS-NF-003, VPS-SR-001, VPS-SR-002 (incl. slot and entry/exit routes) | 50 | PASS |
+| 11 | `slot-session-consistency.test.js` | VPS-NF-004 | 6 | PASS |
+| 12 | `uptime-monitor.test.js` | VPS-NF-002 | 7 | PASS |
+| 13 | `vehicle.test.js` | VPS-F-003, VPS-F-004, VPS-F-015 | 21 | PASS |
+| | **Total** | | **148** | **PASS** |
 
----
+## 3. Results by module
 
-## 3. Detailed Results by Module
+### 3.1 Authentication (`auth.test.js`, 12 tests)
+- Owner registration stores a bcrypt hash; `password` / `passwordHash` never returned.
+- Duplicate email → 409; missing or invalid fields → 400.
+- Valid login → 200 with a JWT carrying `userId` and `role`; wrong password and unknown email → 401 with the same message.
 
-### 3.1 Authentication & User Management (`tests/auth.test.js`)
-- **Requirements Covered:** `VPS-F-001`, `VPS-F-002`, `VPS-SR-004` (TC-F-001, TC-F-002, TC-S-004)
-- **Tests Executed:** 12 | **Status:** PASSED (1.60s)
-- **Key Assertions:**
-  - Owner account successfully registered with bcrypt hashed password.
-  - Password and passwordHash are omitted from registration and login responses.
-  - Duplicate email registration is rejected with HTTP 409 Conflict.
-  - Invalid registration payloads (missing email, invalid phone format) return HTTP 400.
-  - Valid login returns signed JWT containing userId and role.
-  - Invalid credentials return HTTP 401 with generic error (no account enumeration).
+### 3.2 Access control (`rbac-matrix.test.js` 50 tests, `auth-rbac.test.js` 7 tests)
+- Every protected route checked for Owner, Staff and Admin: allowed roles pass, other roles get 403.
+- Missing, malformed and expired tokens → 401.
 
-### 3.2 RBAC Authorization & 50-Route Matrix (`tests/rbac-matrix.test.js` & `tests/auth-rbac.test.js`)
-- **Requirements Covered:** `VPS-SR-001`, `VPS-SR-002`, `VPS-NF-003` (TC-S-001, TC-S-002, TC-N-003)
-- **Tests Executed:** 57 | **Status:** PASSED (1.64s)
-- **Key Assertions:**
-  - Complete matrix testing of 10 API route families across Owner, Staff, and Admin roles.
-  - Unauthenticated requests to protected endpoints return HTTP 401 Unauthorized.
-  - Unauthorized roles attempting admin-only routes return HTTP 403 Forbidden.
-  - Malformed and expired tokens are rejected safely without server crashes.
+### 3.3 Vehicles (`vehicle.test.js`, 21 tests)
+- Register vehicle (201), duplicate registration (409), invalid format (400).
+- Owners can only list, update and see history of their own vehicles; another owner's vehicle → 403/404.
 
-### 3.3 Vehicle Fleet Management (`tests/vehicle.test.js`)
-- **Requirements Covered:** `VPS-F-003`, `VPS-F-004` (TC-F-003, TC-F-004)
-- **Tests Executed:** 21 | **Status:** PASSED (0.81s)
-- **Key Assertions:**
-  - Vehicle registration validates plate numbers against standard regex.
-  - Duplicate registration numbers within active fleet are prevented (HTTP 409).
-  - Horizontal Privilege Access Control: User A cannot update or delete User B's vehicle (HTTP 403/404).
+### 3.4 Parking slots and vehicle entry / exit
+- Slot create / status update / list and vehicle entry / exit are exercised through `rbac-matrix.test.js` (access rules for every role) and `audit.test.js` (slot status change is audited).
+- The full entry and exit flow (slot Available → Occupied → Available, one active session per vehicle, error messages) was verified manually through the UI and shown in the Sprint 1 and Sprint 2 demo videos (`demo/`).
 
-### 3.4 Parking Slots & Occupancy (`tests/occupancy.test.js`)
-- **Requirements Covered:** `VPS-F-005`, `VPS-F-006`, `VPS-F-007`, `VPS-F-016` (TC-F-005, TC-F-006, TC-F-007, TC-F-016)
-- **Tests Executed:** 5 | **Status:** PASSED (0.60s)
-- **Key Assertions:**
-  - Admin creates slots with unique slot identifiers.
-  - Slot status transitions between available, occupied, and maintenance.
-  - Live occupancy dashboard calculates accurate real-time percentages and totals.
+### 3.5 Active vehicle search and single session (`parking-active.test.js` 5, `parking-session.test.js` 3)
+- `GET /api/parking/active/:registration` returns the session and current slot; unknown or not-parked vehicle → 404; Owner → 403.
+- Unique partial index allows only one active session per vehicle.
 
-### 3.5 Parking Sessions & Active Tracking (`tests/parking-active.test.js` & `tests/parking-session.test.js`)
-- **Requirements Covered:** `VPS-F-008`, `VPS-F-009`, `VPS-F-010`, `VPS-F-011`, `VPS-F-012`, `VPS-F-013`, `VPS-F-014`, `VPS-F-018`
-- **Tests Executed:** 8 | **Status:** PASSED (1.22s)
-- **Key Assertions:**
-  - Vehicle entry allocates an available slot and transitions slot status to occupied.
-  - Compound uniqueness constraint: Prevents multiple active sessions for the same vehicle (HTTP 409).
-  - Search active vehicle returns allocated slot number and floor.
-  - Exit recording calculates duration, archives session as completed, and atomically frees the slot.
+### 3.6 Occupancy and consistency (`occupancy.test.js` 5, `slot-session-consistency.test.js` 6)
+- `GET /api/admin/occupancy` returns slot counts, occupancy rate and active vehicles; handles an empty car park; non-admin blocked.
+- Consistency checker detects occupied slots without a session, sessions on non-occupied or missing slots, and duplicate active sessions.
 
-### 3.6 Security Audit Trail & Sanitization (`tests/audit.test.js`)
-- **Requirements Covered:** `VPS-F-017`, `VPS-SR-005`, `VPS-NF-006` (TC-F-017, TC-S-005, TC-N-006)
-- **Tests Executed:** 15 | **Status:** PASSED (2.95s)
-- **Key Assertions:**
-  - Sensitive operations (login failures, slot modifications, user role adjustments) emit audit logs.
-  - Sensitive fields (`password`, `token`, `authorization`) are redacted with `[REDACTED]` prior to persistence.
-  - 1-year data retention queries and TTL indexing verified.
+### 3.7 Audit (`audit.test.js`, 15 tests)
+- Login success/failure and admin slot status changes are recorded; only Admin can read `/api/admin/audit`.
+- Passwords, hashes, tokens and secrets are redacted, including nested fields.
+- 365-day TTL index; 11-month-old records still retrievable; date filter and paging work.
 
-### 3.7 HTTPS Transport & Error Formatting (`tests/https.test.js` & `tests/error-messages.test.js`)
-- **Requirements Covered:** `VPS-SR-003`, `VPS-NF-005` (TC-S-003, TC-N-005)
-- **Tests Executed:** 13 | **Status:** PASSED (1.06s)
-- **Key Assertions:**
-  - HTTP requests in production redirect with HTTP 301 to HTTPS.
-  - Strict-Transport-Security (HSTS) headers applied to all secure responses.
-  - Error middleware returns uniform `{{ error: message }}` responses with zero stack-trace leaks.
+### 3.8 HTTPS, errors, availability (`https.test.js` 7, `error-messages.test.js` 6, `health.test.js` 4, `uptime-monitor.test.js` 7)
+- Production: HTTP → 301 to HTTPS, credentials over HTTP → 403, HSTS behind a trusted proxy; spoofed `X-Forwarded-Proto` ignored.
+- Errors are `{ "error": message }` with no stack traces (400 / 409 / 500 cases).
+- `/api/health` → 200 when the database is connected, 503 when it is down; the uptime monitor computes availability from these checks.
 
-### 3.8 Availability & Uptime Monitor (`tests/health.test.js` & `tests/uptime-monitor.test.js`)
-- **Requirements Covered:** `VPS-NF-002` (TC-N-002)
-- **Tests Executed:** 11 | **Status:** PASSED (0.77s)
-- **Key Assertions:**
-  - `/api/health` returns heartbeat status and uptime in milliseconds.
-  - Uptime monitor periodically polls health endpoint and tracks SLA availability.
+## 4. Conclusion
 
----
+All 148 tests pass. Requirements without a dedicated automated test (slot management details, entry/exit flow, owner view of VPS-F-012, browser part of VPS-NF-005) were verified manually and in the demo videos; see the System Validation Report.
 
-## 4. Test Conclusion
+## How to reproduce
 
-The unit test run achieved a **100% pass rate** across all 142 assertions. The application exhibits high reliability, strict authorization controls, and deterministic state transitions.
+```
+cd server
+npm ci
+npm test                      # 13 suites, 148 tests
+npx jest --runInBand --coverage
+```
+Tests mock the Mongoose models, so no MongoDB instance is needed. The same `npm test` runs in GitHub Actions (`.github/workflows/ci.yml`) on every pull request.

@@ -1,15 +1,15 @@
-# Vehicle Parking System (VPS) â€” Updated Software Test Plan & Test Cases (v3.0)
+# Vehicle Parking System (VPS) — Updated Software Test Plan & Test Cases (v3.0)
 
 **Project:** Vehicle Parking System (MERN Stack)  
 **Deliverable:** Part-3: Updated Test Plan & Test Case Specifications  
 **Organization:** ParkMatrix (Team 5)  
 **Document Version:** **v3.0 (Baselined Post-Sprints)**  
-**Date:** 5th November 2026 (Execution Window: 2nd Nov â€“ 6th Nov 2026)  
+**Date:** 5th November 2026 (Execution Window: 2nd Nov – 6th Nov 2026)  
 **Authors / Team 5:**
-- Preksha C M (`Preksha-a11y`) â€” QA Lead, Test Engineer
-- Nishant H (`Nishant-Hegde`) â€” Product Owner, Developer, Test Engineer
-- Siddesh V S (`siddeshvs351`) â€” Dev Lead, Developer, Test Engineer
-- Salasha V (`salashav`) â€” Security Tester, Developer, Test Engineer
+- Preksha C M (`Preksha-a11y`) — QA Lead, Test Engineer
+- Nishant H (`Nishant-Hegde`) — Product Owner, Developer, Test Engineer
+- Siddesh V S (`siddeshvs351`) — Dev Lead, Developer, Test Engineer
+- Salasha V (`salashav`) — Security Tester, Developer, Test Engineer
 
 ---
 
@@ -61,7 +61,7 @@ This document establishes the official **v3.0 baseline** of the Software Test Pl
 - **Target Requirement:** `VPS-F-004`
 - **Procedure:**
   1. GET /api/vehicles as owner.
-  2. PUT /api/vehicles/:id updating model.
+  2. PATCH /api/vehicles/:id updating model.
   3. User B attempts update on User A's vehicle.
 - **Expected Result:** Step 1: Returns owner fleet. Step 2: Details updated. Step 3: HTTP 403/404 Forbidden/Not Found.
 - **Actual Verified Result:** Verified: Horizontal privilege separation enforced; User B cannot touch User A's data.
@@ -71,7 +71,7 @@ This document establishes the official **v3.0 baseline** of the Software Test Pl
 - **Target Requirement:** `VPS-F-005`
 - **Procedure:**
   1. POST /api/slots as Admin.
-  2. POST duplicate slotNumber.
+  2. POST a duplicate slot ID.
   3. Attempt creation as Owner or Staff.
 - **Expected Result:** Step 1: HTTP 201 Created. Step 2: HTTP 409 Conflict. Step 3: HTTP 403 Forbidden.
 - **Actual Verified Result:** Verified: Admin creates slot; duplicates rejected; non-admins blocked with 403.
@@ -80,7 +80,7 @@ This document establishes the official **v3.0 baseline** of the Software Test Pl
 ### TC-F-006: Update Slot Status (Admin) (`VPS-F-006`)
 - **Target Requirement:** `VPS-F-006`
 - **Procedure:**
-  1. PUT /api/slots/:id/status to 'maintenance'.
+  1. PATCH /api/slots/:id/status to 'Unavailable'.
   2. Attempt status change while active session exists.
   3. Attempt as Staff.
 - **Expected Result:** Step 1: HTTP 200 OK. Step 2: HTTP 409 Conflict. Step 3: HTTP 403 Forbidden.
@@ -91,25 +91,25 @@ This document establishes the official **v3.0 baseline** of the Software Test Pl
 - **Target Requirement:** `VPS-F-007`
 - **Procedure:**
   1. GET /api/slots as Owner, Staff, Admin.
-  2. Seed slots across available, occupied, maintenance.
-- **Expected Result:** Returns complete slot array with accurate status, floor, and slotType properties.
+  2. Seed slots across Available, Occupied, Unavailable.
+- **Expected Result:** Returns all slots sorted by slot ID with their current status.
 - **Actual Verified Result:** Verified: All roles query slot status; real-time statuses render correctly.
 - **Status:** **PASS**
 
 ### TC-F-008: Available-Slot Picker on Entry (`VPS-F-008`)
 - **Target Requirement:** `VPS-F-008`
 - **Procedure:**
-  1. GET /api/slots/available.
-  2. Attempt check-in using an occupied or maintenance slot.
-- **Expected Result:** Step 1: Returns only slots with status='available'. Step 2: API rejects check-in with HTTP 409.
+  1. GET /api/slots?status=Available.
+  2. Attempt check-in using an Occupied or Unavailable slot.
+- **Expected Result:** Step 1: Returns only slots with status 'Available'. Step 2: API rejects check-in with HTTP 409.
 - **Actual Verified Result:** Verified: Only available slots returned; invalid slot selection denied with 409.
 - **Status:** **PASS**
 
 ### TC-F-009: Record Vehicle Entry (Session) (`VPS-F-009`)
 - **Target Requirement:** `VPS-F-009`
 - **Procedure:**
-  1. POST /api/parking/entry as Staff with valid vehicleId and available slotId.
-- **Expected Result:** HTTP 201 Created; ParkingSession record created with status='active' and entry timestamp.
+  1. POST /api/parking/entry as Staff with a registered vehicle's registration number and an available slot.
+- **Expected Result:** HTTP 201 Created; ParkingSession record created with status 'active' and entry timestamp.
 - **Actual Verified Result:** Verified: Active session created linking vehicle, slot, staff ID, and timestamp.
 - **Status:** **PASS**
 
@@ -118,14 +118,14 @@ This document establishes the official **v3.0 baseline** of the Software Test Pl
 - **Procedure:**
   1. Execute valid vehicle entry.
   2. Inspect slot document in database / response.
-- **Expected Result:** Slot status atomically transitions from 'available' to 'occupied'.
-- **Actual Verified Result:** Verified: Slot status marked 'occupied' simultaneously with session creation.
+- **Expected Result:** Slot status changes from 'Available' to 'Occupied'.
+- **Actual Verified Result:** Verified manually (demo): slot reserved with a conditional update; if session creation fails the slot is set back to Available.
 - **Status:** **PASS**
 
 ### TC-F-011: Search Active Parked Vehicle (`VPS-F-011`)
 - **Target Requirement:** `VPS-F-011`
 - **Procedure:**
-  1. GET /api/parking/active?regNumber=KA-01-AB-1234 as Staff/Admin/Owner.
+  1. GET /api/parking/active/KA01AB1234 as Staff/Admin (Owner gets 403).
   2. Search unregistered vehicle.
 - **Expected Result:** Step 1: Returns active session document. Step 2: HTTP 404 Not Found.
 - **Actual Verified Result:** Verified: Active vehicle located instantly; 404 returned when vehicle not parked.
@@ -134,10 +134,10 @@ This document establishes the official **v3.0 baseline** of the Software Test Pl
 ### TC-F-012: Show Current Slot of Parked Vehicle (`VPS-F-012`)
 - **Target Requirement:** `VPS-F-012`
 - **Procedure:**
-  1. GET /api/parking/active/:regNumber.
+  1. GET /api/parking/active/:registration (Staff) or GET /api/vehicles/:id/current-slot (Owner).
   2. Inspect returned slot payload.
-- **Expected Result:** Returns allocated slotNumber, floor, and check-in timestamp.
-- **Actual Verified Result:** Verified: Current slot and floor clearly indicated in response payload.
+- **Expected Result:** Returns the allocated slot and the entry time.
+- **Actual Verified Result:** Verified: current slot returned in the response (owner view checked manually in the demo).
 - **Status:** **PASS**
 
 ### TC-F-013: Record Vehicle Exit (`VPS-F-013`)
@@ -145,8 +145,8 @@ This document establishes the official **v3.0 baseline** of the Software Test Pl
 - **Procedure:**
   1. POST /api/parking/exit as Staff for active session.
   2. Attempt exit for inactive vehicle.
-- **Expected Result:** Step 1: HTTP 200 OK; exitTime recorded; session marked 'completed'. Step 2: HTTP 400/404.
-- **Actual Verified Result:** Verified: Duration computed; session marked 'completed'; duplicate exit blocked.
+- **Expected Result:** Step 1: HTTP 200 OK; exitTime recorded; session marked 'complete'. Step 2: HTTP 404.
+- **Actual Verified Result:** Verified manually (demo): exit time recorded; session marked 'complete'; exit without an active session returns 404.
 - **Status:** **PASS**
 
 ### TC-F-014: Free Slot on Exit (Atomic) (`VPS-F-014`)
@@ -154,14 +154,14 @@ This document establishes the official **v3.0 baseline** of the Software Test Pl
 - **Procedure:**
   1. Complete vehicle exit operation.
   2. Inspect associated slot document.
-- **Expected Result:** Slot status atomically transitions from 'occupied' back to 'available'.
-- **Actual Verified Result:** Verified: Slot status restored to 'available' and ready for immediate reassignment.
+- **Expected Result:** Slot status changes from 'Occupied' back to 'Available'.
+- **Actual Verified Result:** Verified manually (demo): slot status restored to 'Available' and ready for reassignment.
 - **Status:** **PASS**
 
 ### TC-F-015: View Own Parking History (`VPS-F-015`)
 - **Target Requirement:** `VPS-F-015`
 - **Procedure:**
-  1. GET /api/parking/history as Owner.
+  1. GET /api/vehicles/:id/history as Owner.
   2. Owner attempts to query User B's history.
 - **Expected Result:** Step 1: Returns history of completed sessions for user's fleet. Step 2: Filtered / 403.
 - **Actual Verified Result:** Verified: History isolated strictly to authenticated owner's vehicles.
@@ -170,7 +170,7 @@ This document establishes the official **v3.0 baseline** of the Software Test Pl
 ### TC-F-016: Admin Occupancy Dashboard (`VPS-F-016`)
 - **Target Requirement:** `VPS-F-016`
 - **Procedure:**
-  1. GET /api/occupancy and GET /api/admin/metrics as Admin.
+  1. GET /api/admin/occupancy as Admin.
 - **Expected Result:** Returns total slots, available count, occupied count, and percentage occupancy.
 - **Actual Verified Result:** Verified: Metrics aggregate properly; unauthorized roles blocked from admin metrics.
 - **Status:** **PASS**
@@ -180,7 +180,7 @@ This document establishes the official **v3.0 baseline** of the Software Test Pl
 - **Procedure:**
   1. Trigger failed login.
   2. Update slot status as Admin.
-  3. Query GET /api/admin/audit-logs.
+  3. Query GET /api/admin/audit.
 - **Expected Result:** Audit records created with timestamp, action, actorId, and sanitized details.
 - **Actual Verified Result:** Verified: Operations logged reliably; passwords and tokens strictly redacted.
 - **Status:** **PASS**
@@ -300,7 +300,7 @@ This document establishes the official **v3.0 baseline** of the Software Test Pl
 ## 3. Test Execution Summary
 
 - **Total Test Cases Baselined:** 29
-- **Total Test Cases Executed:** 29 (142 Unit Assertions)
+- **Total Test Cases Executed:** 29 (backed by 148 automated tests in 13 suites plus manual checks, re-run 16th Nov 2026)
 - **Total Passed:** 29 (100%)
 - **Total Failed:** 0
 - **Regression Defects:** 0
