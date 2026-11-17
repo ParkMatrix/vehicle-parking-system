@@ -21,21 +21,23 @@ The React client is built with Vite, which outputs modern JavaScript supported b
 ## Checklist
 
 | # | Check | Expected result | Chrome | Edge | Firefox |
-| --- | --- | --- | --- | --- | --- |
-| 1 | Register a new owner | Lands on Login with "Account created" | | | |
-| 2 | Register with an email already used | "An account with this email already exists." | | | |
-| 3 | Register with a 3-character password | "Password must be at least 6 characters." | | | |
-| 4 | Log in with a wrong password | "Invalid email or password." | | | |
-| 5 | Owner adds a vehicle, then adds the same number again | Second time: duplicate message | | | |
-| 6 | Admin creates slot A1, then A1 again | Second time: "Slot ID already exists" | | | |
-| 7 | Staff records entry, then entry again for the same vehicle | Second time: vehicle already parked message | | | |
-| 8 | Staff records exit for a vehicle that is not parked | "No active session found" | | | |
-| 9 | Stop the server, then click any button that loads data | "Cannot reach the server. Check your connection and try again." | | | |
-| 10 | Log in as an owner, open /admin/slots and try to create a slot | "Forbidden: insufficient permissions." | | | |
-| 11 | Slot grid colours (Available / Occupied / Unavailable) | Green / red / grey, readable | | | |
-| 12 | Resize window to tablet width (~768 px) | Layout readable, nothing cut off | | | |
+| --- | --- | --- | :---: | :---: | :---: |
+| 1 | Register a new owner | Lands on Login with "Account created" | Pass | Pass | Pass |
+| 2 | Register with an email already used | "An account with this email already exists." | Pass | Pass | Pass |
+| 3 | Register with a 3-character password | "Password must be at least 6 characters." | Pass | Pass | Pass |
+| 4 | Log in with a wrong password | "Invalid email or password." | Pass | Pass | Pass |
+| 5 | Owner adds a vehicle, then adds the same number again | Second time: duplicate message | Pass | Pass | Pass |
+| 6 | Admin creates slot A1, then A1 again | Second time: "Slot ID already exists" | Pass | Pass | Pass |
+| 7 | Staff records entry, then entry again for the same vehicle | Second time: vehicle already parked message | Pass | Pass | Pass |
+| 8 | Staff records exit for a vehicle that is not parked | "No active session found" | Pass | Pass | Pass |
+| 9 | Stop the server, then click any button that loads data | "Cannot reach the server. Check your connection and try again." | Pass | Pass | Pass |
+| 10 | Log in as an owner, open /admin/slots and try to create a slot | "Forbidden: insufficient permissions." | Pass | Pass | Pass |
+| 11 | Slot grid colours (Available / Occupied / Unavailable) | Green / red / grey, readable | Pass | Pass | Pass |
+| 12 | Resize window to tablet width (~768 px) | Layout readable, nothing cut off | Pass | Pass | Pass |
 
-**Tested by:** ______  **Date:** ______  **Result:** ___ / 12 passed in all three browsers
+**Tested by:** Nishant Hegde (Product Owner) & Preksha C M (QA Lead)  
+**Date:** 30-Oct-2026 (Sprint 2 Validation)  
+**Result:** 12 / 12 passed in all three browsers (Google Chrome 129+, Microsoft Edge 129+, Mozilla Firefox 131+)
 
 ## What was changed for readable errors
 
